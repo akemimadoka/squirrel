@@ -510,7 +510,7 @@ SQRESULT sq_setclosureroot(HSQUIRRELVM v,SQInteger idx)
         v->Pop();
         return SQ_OK;
     }
-    return sq_throwerror(v, _SC("ivalid type"));
+    return sq_throwerror(v, _SC("invalid type"));
 }
 
 SQRESULT sq_getclosureroot(HSQUIRRELVM v,SQInteger idx)
@@ -558,7 +558,7 @@ SQRESULT sq_setroottable(HSQUIRRELVM v)
         v->Pop();
         return SQ_OK;
     }
-    return sq_throwerror(v, _SC("ivalid type"));
+    return sq_throwerror(v, _SC("invalid type"));
 }
 
 SQRESULT sq_setconsttable(HSQUIRRELVM v)
@@ -569,7 +569,7 @@ SQRESULT sq_setconsttable(HSQUIRRELVM v)
         v->Pop();
         return SQ_OK;
     }
-    return sq_throwerror(v, _SC("ivalid type, expected table"));
+    return sq_throwerror(v, _SC("invalid type, expected table"));
 }
 
 void sq_setforeignptr(HSQUIRRELVM v,SQUserPointer p)
@@ -657,6 +657,10 @@ SQRESULT sq_getinteger(HSQUIRRELVM v,SQInteger idx,SQInteger *i)
         *i = tointeger(o);
         return SQ_OK;
     }
+    if(sq_isbool(o)) {
+        *i = SQVM::IsFalse(o)?SQFalse:SQTrue;
+        return SQ_OK;
+    }
     return SQ_ERROR;
 }
 
@@ -678,6 +682,15 @@ SQRESULT sq_getbool(HSQUIRRELVM v,SQInteger idx,SQBool *b)
         return SQ_OK;
     }
     return SQ_ERROR;
+}
+
+SQRESULT sq_getstringandsize(HSQUIRRELVM v,SQInteger idx,const SQChar **c,SQInteger *size)
+{
+    SQObjectPtr *o = NULL;
+    _GETSAFE_OBJ(v, idx, OT_STRING,o);
+    *c = _stringval(*o);
+    *size = _string(*o)->_len;
+    return SQ_OK;
 }
 
 SQRESULT sq_getstring(HSQUIRRELVM v,SQInteger idx,const SQChar **c)
@@ -1128,7 +1141,7 @@ SQRESULT sq_reservestack(HSQUIRRELVM v,SQInteger nsize)
 {
     if (((SQUnsignedInteger)v->_top + nsize) > v->_stack.size()) {
         if(v->_nmetamethodscall) {
-            return sq_throwerror(v,_SC("cannot resize stack while in  a metamethod"));
+            return sq_throwerror(v,_SC("cannot resize stack while in a metamethod"));
         }
         v->_stack.resize(v->_stack.size() + ((v->_top + nsize) - v->_stack.size()));
     }
@@ -1155,7 +1168,7 @@ SQRESULT sq_call(HSQUIRRELVM v,SQInteger params,SQBool retval,SQBool raiseerror)
     if(v->Call(v->GetUp(-(params+1)),params,v->_top-params,res,raiseerror?true:false)){
 
         if(!v->_suspended) {
-            v->Pop(params);//pop closure and args
+            v->Pop(params);//pop args
         }
         if(retval){
             v->Push(res); return SQ_OK;
@@ -1199,29 +1212,24 @@ SQRESULT sq_wakeupvm(HSQUIRRELVM v,SQBool wakeupret,SQBool retval,SQBool raiseer
 
 void sq_setreleasehook(HSQUIRRELVM v,SQInteger idx,SQRELEASEHOOK hook)
 {
-    if(sq_gettop(v) >= 1){
-        SQObjectPtr &ud=stack_get(v,idx);
-        switch( type(ud) ) {
-        case OT_USERDATA:   _userdata(ud)->_hook = hook;    break;
-        case OT_INSTANCE:   _instance(ud)->_hook = hook;    break;
-        case OT_CLASS:      _class(ud)->_hook = hook;       break;
-        default: break; //shutup compiler
-        }
+    SQObjectPtr &ud=stack_get(v,idx);
+    switch( type(ud) ) {
+    case OT_USERDATA:   _userdata(ud)->_hook = hook;    break;
+    case OT_INSTANCE:   _instance(ud)->_hook = hook;    break;
+    case OT_CLASS:      _class(ud)->_hook = hook;       break;
+    default: return;
     }
 }
 
 SQRELEASEHOOK sq_getreleasehook(HSQUIRRELVM v,SQInteger idx)
 {
-    if(sq_gettop(v) >= 1){
-        SQObjectPtr &ud=stack_get(v,idx);
-        switch( type(ud) ) {
-        case OT_USERDATA:   return _userdata(ud)->_hook;    break;
-        case OT_INSTANCE:   return _instance(ud)->_hook;    break;
-        case OT_CLASS:      return _class(ud)->_hook;       break;
-        default: break; //shutup compiler
-        }
+    SQObjectPtr &ud=stack_get(v,idx);
+    switch( type(ud) ) {
+    case OT_USERDATA:   return _userdata(ud)->_hook;    break;
+    case OT_INSTANCE:   return _instance(ud)->_hook;    break;
+    case OT_CLASS:      return _class(ud)->_hook;       break;
+    default: return NULL;
     }
-    return NULL;
 }
 
 void sq_setcompilererrorhandler(HSQUIRRELVM v,SQCOMPILERERROR f)
@@ -1235,7 +1243,7 @@ SQRESULT sq_writeclosure(HSQUIRRELVM v,SQWRITEFUNC w,SQUserPointer up)
     _GETSAFE_OBJ(v, -1, OT_CLOSURE,o);
     unsigned short tag = SQ_BYTECODE_STREAM_TAG;
     if(_closure(*o)->_function->_noutervalues)
-        return sq_throwerror(v,_SC("a closure with free valiables bound it cannot be serialized"));
+        return sq_throwerror(v,_SC("a closure with free variables bound cannot be serialized"));
     if(w(up,&tag,2) != 2)
         return sq_throwerror(v,_SC("io error"));
     if(!_closure(*o)->Save(v,up,w))

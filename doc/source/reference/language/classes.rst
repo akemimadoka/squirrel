@@ -46,7 +46,7 @@ For instance: ::
 
     }
 
-the previous code examples is a syntactic sugar for: ::
+the previous code example is a syntactic sugar for: ::
 
     Foo <- class {
         //constructor
@@ -67,7 +67,7 @@ the previous code examples is a syntactic sugar for: ::
 
     }
 
-in order to emulate namespaces, is also possible to declare something like this::
+in order to emulate namespaces, it is also possible to declare something like this::
 
     //just 2 regular nested tables
     FakeNamespace <- {
@@ -214,7 +214,7 @@ class declaration. The values are copied verbatim, *no cloning is performed* eve
 
 .. note:: FOR C# and Java programmers:
 
-            Squirrel doesn't clone member's default values nor executes the member declaration for each instace(as C# or java).
+            Squirrel doesn't clone member's default values nor executes the member declaration for each instance(as C# or java).
 
             So consider this example: ::
 
@@ -226,8 +226,8 @@ class declaration. The values are copied verbatim, *no cloning is performed* eve
                 local a = Foo();
                 local b = Foo();
 
-            In the snippet above both instances will refer to the same array and same table.To archieve what a C# or Java programmer would
-            exepect, the following approach should be taken. ::
+            In the snippet above both instances will refer to the same array and same table.To achieve what a C# or Java programmer would
+            expect, the following approach should be taken. ::
 
                 class Foo {
                   myarray = null
@@ -327,7 +327,7 @@ Here an example: ::
         }
     }
 
-Same rule apply to the constructor. The constructor is a regular function (apart from being automatically invoked on contruction).::
+Same rule apply to the constructor. The constructor is a regular function (apart from being automatically invoked on construction).::
 
     class BaseClass {
         constructor()

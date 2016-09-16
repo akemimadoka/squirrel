@@ -141,7 +141,7 @@ The expression is evaluated in this order: derefexp after the explist (arguments
 the end the call.
 
 A function call in Squirrel passes the current environment object *this* as a hidden parameter.
-But when the function was immediately indexed from an object, *this* shall be the object 
+But when the function was immediately indexed from an object, *this* shall be the object
 which was indexed, instead.
 
 If we call a function with the syntax::
@@ -156,7 +156,7 @@ Whereas with the syntax::
 
 the environment object will be the current *this* (that is, propagated from the caller's *this*).
 
-It may help to remember the rules in the following way: 
+It may help to remember the rules in the following way:
 
     foo(x,y) ---> this.foo(x,y)
     table.foo(x,y) ---> call foo with (table,x,y)
@@ -196,7 +196,7 @@ Lambda Expressions
 
     exp := '@' '(' paramlist ')' exp
 
-Lambda expressions are a synctactic sugar to quickly define a function that consists of a single expression.
+Lambda expressions are a syntactic sugar to quickly define a function that consists of a single expression.
 This feature comes handy when functional programming patterns are applied, like map/reduce or passing a compare method to
 array.sort().
 
